@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>農業部農村發展及水土保持署臺南分署在建工程上傳情況統計</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    :root {
+      --bg-page:    #f5f5f3;
+      --bg-card:    #ffffff;
+      --bg-surface: #eeecea;
+      --text-primary:   #1a1a18;
+      --text-secondary: #5a5955;
+      --text-muted:     #888780;
+      --border:     rgba(0,0,0,0.12);
+      --border-th:  rgba(0,0,0,0.10);
+      --border-td:  rgba(0,0,0,0.06);
+      --green-text: #0a5c44;
+      --green-bg:   #d0f0e4;
+      --red-text:   #7a2e10;
+      --red-bg:     #fad9cc;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-page:    #1a1a18;
+        --bg-card:    #272724;
+        --bg-surface: #323230;
+        --text-primary:   #e8e6de;
+        --text-secondary: #b8b6ae;
+        --text-muted:     #888780;
+        --border:     rgba(255,255,255,0.10);
+        --border-th:  rgba(255,255,255,0.10);
+        --border-td:  rgba(255,255,255,0.06);
+        --green-text: #5fcfaa;
+        --green-bg:   #0d3d2a;
+        --red-text:   #f0936a;
+        --red-bg:     #3d1a0a;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .container { width: 100%; max-width: 720px; }
+    .header { margin-bottom: 1.5rem; }
+    .header h1 { font-size: 18px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; line-height: 1.5; }
+    .header p { font-size: 13px; color: var(--text-muted); }
+    .card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .filter-label { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
+    select {
+      flex: 1;
+      min-width: 180px;
+      font-size: 13px;
+      padding: 7px 10px;
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+    select:focus { outline: none; border-color: #1D9E75; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card { background: var(--bg-surface); border-radius: 8px; padding: 1rem; text-align: center; }
+    .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+    .stat-value { font-size: 26px; font-weight: 500; }
+    .stat-value.uploaded { color: var(--green-text); }
+    .stat-value.not-uploaded { color: var(--red-text); }
+    .stat-value.total { color: var(--text-primary); }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      margin-bottom: 1rem; font-size: 13px; color: var(--text-secondary);
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+    .chart-wrapper { position: relative; width: 100%; height: 300px; }
+    .status-badge {
+      display: inline-block; font-size: 11px;
+      padding: 2px 8px; border-radius: 4px; font-weight: 500;
+    }
+    .badge-uploaded { background: var(--green-bg); color: var(--green-text); }
+    .badge-not-uploaded { background: var(--red-bg); color: var(--red-text); }
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left; font-weight: 500; font-size: 12px;
+      color: var(--text-secondary); padding: 8px 12px 8px 0;
+      border-bottom: 0.5px solid var(--border-th);
+    }
+    td {
+      padding: 10px 12px 10px 0;
+      border-bottom: 0.5px solid var(--border-td);
+      color: var(--text-primary); vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    .loading { text-align: center; color: var(--text-muted); font-size: 14px; padding: 2rem 0; }
+    .error-msg {
+      background: var(--red-bg); color: var(--red-text);
+      border-radius: 8px; padding: 1rem;
+      font-size: 13px; margin-bottom: 1rem; display: none;
+    }
+    .section-label {
+      font-size: 12px; font-weight: 500; color: var(--text-secondary);
+      margin-bottom: 1rem; letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .empty-msg {
+      text-align: center; color: var(--text-muted);
+      font-size: 13px; padding: 1.5rem 0;
+    }
+    .no-color { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>農業部農村發展及水土保持署臺南分署在建工程上傳情況統計</h1>
+    <div style="display:flex; align-items:center; gap:12px; margin-top:6px;">
+      <p id="last-updated" style="margin:0;">資料讀取中...</p>
+      <button id="refresh-btn" onclick="refreshData()" style="font-size:12px; padding:4px 12px; border-radius:6px; border:0.5px solid var(--border); background:var(--bg-surface); color:var(--text-secondary); cursor:pointer;">重新整理</button>
+    </div>
+  </div>
+
+  <div class="error-msg" id="error-msg"></div>
+
+  <div class="card">
+    <div class="loading" id="loading">資料載入中，請稍候...</div>
+    <div id="content" style="display:none;">
+
+      <div class="filter-row">
+        <span class="filter-label">監造單位篩選</span>
+        <select id="supervisor-select">
+          <option value="all">全部</option>
+        </select>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">總件數</div>
+          <div class="stat-value total" id="total-count">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">已上傳</div>
+          <div class="stat-value uploaded" id="uploaded-count">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">未上傳</div>
+          <div class="stat-value not-uploaded" id="not-uploaded-count">—</div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span class="legend-item">
+          <span class="legend-dot" style="background:#1D9E75;"></span>
+          已上傳 <span id="legend-uploaded-pct"></span>
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot" style="background:#D85A30;"></span>
+          未上傳 <span id="legend-not-uploaded-pct"></span>
+        </span>
+      </div>
+
+      <div class="chart-wrapper">
+        <canvas id="pieChart" role="img" aria-label="在建工程上傳情況圓餅圖"></canvas>
+      </div>
+
+      <div id="not-uploaded-supervisors" style="margin-top:1.5rem; display:none;">
+        <div style="font-size:12px; font-weight:500; color:var(--text-secondary); letter-spacing:0.04em; text-transform:uppercase; margin-bottom:0.75rem;">尚有未上傳案件的監造單位</div>
+        <div id="supervisor-tags" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      </div>
+      <div id="all-uploaded-msg" style="margin-top:1.5rem; display:none; font-size:13px; color:var(--green-text); font-weight:500;">✓ 目前篩選範圍內所有案件皆已上傳</div>
+    </div>
+  </div>
+
+  <div class="card" id="table-card" style="display:none;">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:1rem;">
+      <div class="section-label" style="margin-bottom:0;">工程明細清單</div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="filter-label">上傳情況篩選</span>
+        <select id="status-select" style="min-width:120px; flex:none;">
+          <option value="all">全部</option>
+          <option value="uploaded">已上傳</option>
+          <option value="not-uploaded">未上傳</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:40px;">#</th>
+            <th>在建工程名稱</th>
+            <th>監造單位</th>
+            <th>承包廠商</th>
+            <th>上傳情況</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+    <div class="empty-msg" id="empty-msg" style="display:none;">此監造單位無資料</div>
+  </div>
+
+</div>
+
+<script>
+  const SHEET_ID = "1gw2Hflo7kZLKMgeK-JeH1AjWuzXQjHln0vtwRZtduTo";
+  const GID = "829067000";
+  const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+
+  let allRows = [];
+  let pieChart = null;
+
+  function parseCSV(text) {
+    const lines = text.trim().split("\n");
+    const results = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = [];
+      let cur = "", inQ = false;
+      for (let c of lines[i]) {
+        if (c === '"') { inQ = !inQ; continue; }
+        if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ""; continue; }
+        cur += c;
+      }
+      cols.push(cur.trim());
+      if (cols[0] && cols[1]) {
+        results.push({
+          no: cols[0] || "",
+          name: cols[1] || "",
+          supervisor: cols[2] || "",
+          contractor: cols[3] || "",
+          status: cols[4] || ""
+        });
+      }
+    }
+    return results;
+  }
+
+  function updateUI(rows) {
+    const uploaded = rows.filter(r => r.status.startsWith("已上傳")).length;
+    const notUploaded = rows.filter(r => r.status.startsWith("未上傳")).length;
+    const total = rows.length;
+
+    document.getElementById("total-count").textContent = total;
+    document.getElementById("uploaded-count").textContent = uploaded;
+    document.getElementById("not-uploaded-count").textContent = notUploaded;
+
+    const upPct = total ? Math.round(uploaded / total * 100) : 0;
+    const noPct = 100 - upPct;
+    document.getElementById("legend-uploaded-pct").textContent = upPct + "%";
+    document.getElementById("legend-not-uploaded-pct").textContent = noPct + "%";
+
+    if (pieChart) {
+      pieChart.data.datasets[0].data = [uploaded, notUploaded];
+      pieChart.update();
+    }
+
+    // 未上傳監造單位區塊
+    const notUploadedSups = [...new Set(
+      rows.filter(r => r.status.startsWith("未上傳")).map(r => r.supervisor).filter(Boolean)
+    )].sort();
+    const tagsEl = document.getElementById("supervisor-tags");
+    const blockEl = document.getElementById("not-uploaded-supervisors");
+    const allUploadedMsg = document.getElementById("all-uploaded-msg");
+    if (notUploadedSups.length > 0) {
+      tagsEl.innerHTML = notUploadedSups.map(s => {
+        const count = rows.filter(r => r.status.startsWith("未上傳") && r.supervisor === s).length;
+        return `<span style="display:inline-flex; align-items:center; gap:5px; background:var(--red-bg); color:var(--red-text); font-size:12px; padding:4px 10px; border-radius:6px; font-weight:500;">${s}<span style="background:var(--red-text); color:var(--bg-card); border-radius:4px; padding:1px 6px; font-size:11px;">${count}</span></span>`;
+      }).join("");
+      blockEl.style.display = "block";
+      allUploadedMsg.style.display = "none";
+    } else if (total > 0) {
+      blockEl.style.display = "none";
+      allUploadedMsg.style.display = "block";
+    } else {
+      blockEl.style.display = "none";
+      allUploadedMsg.style.display = "none";
+    }
+
+    const tbody = document.getElementById("table-body");
+    const emptyMsg = document.getElementById("empty-msg");
+    if (rows.length === 0) {
+      tbody.innerHTML = "";
+      emptyMsg.style.display = "block";
+    } else {
+      emptyMsg.style.display = "none";
+      tbody.innerHTML = rows.map(r => {
+        const isUp = r.status.startsWith("已上傳");
+        return `<tr>
+          <td class="no-color">${r.no}</td>
+          <td>${r.name}</td>
+          <td>${r.supervisor}</td>
+          <td>${r.contractor}</td>
+          <td><span class="status-badge ${isUp ? "badge-uploaded" : "badge-not-uploaded"}">${isUp ? "已上傳" : "未上傳"}</span></td>
+        </tr>`;
+      }).join("");
+    }
+  }
+
+  async function loadData() {
+    try {
+      const res = await fetch(CSV_URL + "&t=" + Date.now());  // 避免瀏覽器快取
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      allRows = parseCSV(text);
+
+      // 填入監造單位下拉選單（去重複、排序）
+      const supervisors = [...new Set(allRows.map(r => r.supervisor).filter(Boolean))].sort();
+      const select = document.getElementById("supervisor-select");
+      const currentSup = select.value;
+      select.innerHTML = '<option value="all">全部</option>';
+      supervisors.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s;
+        select.appendChild(opt);
+      });
+      if (currentSup) select.value = currentSup;
+
+      document.getElementById("last-updated").textContent =
+        `共 ${allRows.length} 筆・更新時間：${new Date().toLocaleString("zh-TW")}`;
+
+      // 建立或更新圓餅圖
+      const uploaded = allRows.filter(r => r.status.startsWith("已上傳")).length;
+      const notUploaded = allRows.length - uploaded;
+
+      if (!pieChart) {
+        pieChart = new Chart(document.getElementById("pieChart"), {
+          type: "pie",
+          data: {
+            labels: ["已上傳", "未上傳"],
+            datasets: [{
+              data: [uploaded, notUploaded],
+              backgroundColor: ["#1D9E75", "#D85A30"],
+              borderColor: ["#fff", "#fff"],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: ctx => {
+                    const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                    const pct = total ? Math.round(ctx.parsed / total * 100) : 0;
+                    return ` ${ctx.label}：${ctx.parsed} 件（${pct}%）`;
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        // 篩選事件（只綁定一次）
+        select.addEventListener("change", applyFilters);
+        document.getElementById("status-select").addEventListener("change", applyFilters);
+      }
+
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("content").style.display = "block";
+      document.getElementById("table-card").style.display = "block";
+      document.getElementById("refresh-btn").textContent = "重新整理";
+      document.getElementById("refresh-btn").disabled = false;
+      applyFilters();
+
+    } catch (e) {
+      document.getElementById("loading").style.display = "none";
+      const err = document.getElementById("error-msg");
+      err.style.display = "block";
+      err.textContent = "⚠ 無法讀取試算表資料。請確認試算表已設為「知道連結的任何人皆可檢視」，再重新整理頁面。";
+      document.getElementById("last-updated").textContent = "讀取失敗";
+      document.getElementById("refresh-btn").textContent = "重新整理";
+      document.getElementById("refresh-btn").disabled = false;
+    }
+  }
+
+  function applyFilters() {
+    const supVal = document.getElementById("supervisor-select").value;
+    const statusVal = document.getElementById("status-select").value;
+    let filtered = supVal === "all" ? allRows : allRows.filter(r => r.supervisor === supVal);
+    if (statusVal === "uploaded") filtered = filtered.filter(r => r.status.startsWith("已上傳"));
+    if (statusVal === "not-uploaded") filtered = filtered.filter(r => r.status.startsWith("未上傳"));
+    updateUI(filtered);
+  }
+
+  function refreshData() {
+    document.getElementById("refresh-btn").textContent = "更新中...";
+    document.getElementById("refresh-btn").disabled = true;
+    loadData();
+  }
+
+  loadData();
+</script>
+</body>
+</html>
