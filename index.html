@@ -330,7 +330,7 @@
     if (notUploadedSups.length > 0) {
       redTags.innerHTML = notUploadedSups.map(([name, s]) => {
         const missing = s.total - s.uploaded;
-        return `<span class="tag tag-red">${name}<span class="tag-count">${missing} 件未上傳</span></span>`;
+        return `<span class="tag tag-red">${name}<span class="tag-count">${missing} 件</span></span>`;
       }).join("");
       redBlock.style.display = "block";
     } else {
