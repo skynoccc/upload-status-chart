@@ -52,7 +52,9 @@
     .container { width: 100%; max-width: 720px; }
     .header { margin-bottom: 1.5rem; }
     .header h1 { font-size: 18px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; line-height: 1.5; }
-    .header p { font-size: 13px; color: var(--text-muted); }
+    .header-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
+    .header p { font-size: 13px; color: var(--text-muted); margin: 0; }
+    .hint { margin-top: 6px; font-size: 12px; color: var(--text-muted); line-height: 1.6; }
     .card {
       background: var(--bg-card);
       border: 0.5px solid var(--border);
@@ -61,30 +63,21 @@
       margin-bottom: 1rem;
     }
     .filter-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 1.5rem; flex-wrap: wrap;
     }
     .filter-label { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
     select {
-      flex: 1;
-      min-width: 180px;
-      font-size: 13px;
-      padding: 7px 10px;
-      border: 0.5px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg-surface);
-      color: var(--text-primary);
-      cursor: pointer;
+      flex: 1; min-width: 180px; font-size: 13px;
+      padding: 7px 10px; border: 0.5px solid var(--border);
+      border-radius: 8px; background: var(--bg-surface);
+      color: var(--text-primary); cursor: pointer;
     }
     select:focus { outline: none; border-color: #1D9E75; }
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin-bottom: 1.5rem;
+      gap: 12px; margin-bottom: 1.5rem;
     }
     .stat-card { background: var(--bg-surface); border-radius: 8px; padding: 1rem; text-align: center; }
     .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
@@ -99,6 +92,27 @@
     .legend-item { display: flex; align-items: center; gap: 6px; }
     .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
     .chart-wrapper { position: relative; width: 100%; height: 300px; }
+    .section-label {
+      font-size: 12px; font-weight: 500; color: var(--text-secondary);
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .tags-block { margin-top: 1.5rem; }
+    .tags-block .section-label { margin-bottom: 0.75rem; display: block; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; padding: 4px 10px;
+      border-radius: 6px; font-weight: 500;
+    }
+    .tag-count {
+      border-radius: 4px; padding: 1px 6px;
+      font-size: 11px;
+    }
+    .tag-red { background: var(--red-bg); color: var(--red-text); }
+    .tag-red .tag-count { background: var(--red-text); color: var(--bg-card); }
+    .tag-green { background: var(--green-bg); color: var(--green-text); }
+    .tag-green .tag-count { background: var(--green-text); color: var(--bg-card); }
+    .all-uploaded-msg { margin-top: 1.5rem; font-size: 13px; color: var(--green-text); font-weight: 500; }
     .status-badge {
       display: inline-block; font-size: 11px;
       padding: 2px 8px; border-radius: 4px; font-weight: 500;
@@ -118,21 +132,26 @@
       color: var(--text-primary); vertical-align: middle;
     }
     tr:last-child td { border-bottom: none; }
+    .no-color { color: var(--text-muted); }
     .loading { text-align: center; color: var(--text-muted); font-size: 14px; padding: 2rem 0; }
     .error-msg {
       background: var(--red-bg); color: var(--red-text);
       border-radius: 8px; padding: 1rem;
       font-size: 13px; margin-bottom: 1rem; display: none;
     }
-    .section-label {
-      font-size: 12px; font-weight: 500; color: var(--text-secondary);
-      margin-bottom: 1rem; letter-spacing: 0.04em; text-transform: uppercase;
+    .empty-msg { text-align: center; color: var(--text-muted); font-size: 13px; padding: 1.5rem 0; }
+    .table-header-row {
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap;
+      gap: 12px; margin-bottom: 1rem;
     }
-    .empty-msg {
-      text-align: center; color: var(--text-muted);
-      font-size: 13px; padding: 1.5rem 0;
+    button#refresh-btn {
+      font-size: 12px; padding: 4px 12px; border-radius: 6px;
+      border: 0.5px solid var(--border); background: var(--bg-surface);
+      color: var(--text-secondary); cursor: pointer;
     }
-    .no-color { color: var(--text-muted); }
+    button#refresh-btn:hover { color: var(--text-primary); }
+    button#refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -140,10 +159,11 @@
 
   <div class="header">
     <h1>農業部農村發展及水土保持署臺南分署在建工程上傳情況統計</h1>
-    <div style="display:flex; align-items:center; gap:12px; margin-top:6px;">
-      <p id="last-updated" style="margin:0;">資料讀取中...</p>
-      <button id="refresh-btn" onclick="refreshData()" style="font-size:12px; padding:4px 12px; border-radius:6px; border:0.5px solid var(--border); background:var(--bg-surface); color:var(--text-secondary); cursor:pointer;">重新整理</button>
+    <div class="header-row">
+      <p id="last-updated">資料讀取中...</p>
+      <button id="refresh-btn" onclick="refreshData()">重新整理</button>
     </div>
+    <p class="hint">資料庫每5分鐘更新一次，如果按下重新整理按鈕數據沒有更新，請耐心等候資料庫更新後，再按下重新整理按鈕。</p>
   </div>
 
   <div class="error-msg" id="error-msg"></div>
@@ -189,17 +209,25 @@
         <canvas id="pieChart" role="img" aria-label="在建工程上傳情況圓餅圖"></canvas>
       </div>
 
-      <div id="not-uploaded-supervisors" style="margin-top:1.5rem; display:none;">
-        <div style="font-size:12px; font-weight:500; color:var(--text-secondary); letter-spacing:0.04em; text-transform:uppercase; margin-bottom:0.75rem;">尚有未上傳案件的監造單位</div>
-        <div id="supervisor-tags" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      <!-- 未上傳監造單位 -->
+      <div class="tags-block" id="not-uploaded-supervisors" style="display:none;">
+        <span class="section-label">尚有未上傳案件的監造單位</span>
+        <div class="tags" id="supervisor-tags-red"></div>
       </div>
-      <div id="all-uploaded-msg" style="margin-top:1.5rem; display:none; font-size:13px; color:var(--green-text); font-weight:500;">✓ 目前篩選範圍內所有案件皆已上傳</div>
+
+      <!-- 已全部上傳監造單位 -->
+      <div class="tags-block" id="completed-supervisors" style="display:none;">
+        <span class="section-label">已完成全部上傳的監造單位</span>
+        <div class="tags" id="supervisor-tags-green"></div>
+      </div>
+
+      <div class="all-uploaded-msg" id="all-uploaded-msg" style="display:none;">✓ 目前篩選範圍內所有案件皆已上傳</div>
     </div>
   </div>
 
   <div class="card" id="table-card" style="display:none;">
-    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:1rem;">
-      <div class="section-label" style="margin-bottom:0;">工程明細清單</div>
+    <div class="table-header-row">
+      <span class="section-label">工程明細清單</span>
       <div style="display:flex; align-items:center; gap:8px;">
         <span class="filter-label">上傳情況篩選</span>
         <select id="status-select" style="min-width:120px; flex:none;">
@@ -223,11 +251,10 @@
         <tbody id="table-body"></tbody>
       </table>
     </div>
-    <div class="empty-msg" id="empty-msg" style="display:none;">此監造單位無資料</div>
+    <div class="empty-msg" id="empty-msg" style="display:none;">此條件無資料</div>
   </div>
 
 </div>
-
 <script>
   const SHEET_ID = "1gw2Hflo7kZLKMgeK-JeH1AjWuzXQjHln0vtwRZtduTo";
   const GID = "829067000";
@@ -280,28 +307,55 @@
       pieChart.update();
     }
 
-    // 未上傳監造單位區塊
-    const notUploadedSups = [...new Set(
-      rows.filter(r => r.status.startsWith("未上傳")).map(r => r.supervisor).filter(Boolean)
-    )].sort();
-    const tagsEl = document.getElementById("supervisor-tags");
-    const blockEl = document.getElementById("not-uploaded-supervisors");
-    const allUploadedMsg = document.getElementById("all-uploaded-msg");
+    // 統計每個監造單位的已上傳/未上傳數量
+    const supStats = {};
+    rows.forEach(r => {
+      if (!r.supervisor) return;
+      if (!supStats[r.supervisor]) supStats[r.supervisor] = { total: 0, uploaded: 0 };
+      supStats[r.supervisor].total++;
+      if (r.status.startsWith("已上傳")) supStats[r.supervisor].uploaded++;
+    });
+
+    const notUploadedSups = Object.entries(supStats)
+      .filter(([, s]) => s.uploaded < s.total)
+      .sort((a, b) => a[0].localeCompare(b[0], "zh-TW"));
+
+    const completedSups = Object.entries(supStats)
+      .filter(([, s]) => s.uploaded === s.total && s.total > 0)
+      .sort((a, b) => a[0].localeCompare(b[0], "zh-TW"));
+
+    // 未上傳區塊
+    const redBlock = document.getElementById("not-uploaded-supervisors");
+    const redTags = document.getElementById("supervisor-tags-red");
     if (notUploadedSups.length > 0) {
-      tagsEl.innerHTML = notUploadedSups.map(s => {
-        const count = rows.filter(r => r.status.startsWith("未上傳") && r.supervisor === s).length;
-        return `<span style="display:inline-flex; align-items:center; gap:5px; background:var(--red-bg); color:var(--red-text); font-size:12px; padding:4px 10px; border-radius:6px; font-weight:500;">${s}<span style="background:var(--red-text); color:var(--bg-card); border-radius:4px; padding:1px 6px; font-size:11px;">${count}</span></span>`;
+      redTags.innerHTML = notUploadedSups.map(([name, s]) => {
+        const missing = s.total - s.uploaded;
+        return `<span class="tag tag-red">${name}<span class="tag-count">${missing} 件未上傳</span></span>`;
       }).join("");
-      blockEl.style.display = "block";
+      redBlock.style.display = "block";
+    } else {
+      redBlock.style.display = "none";
+    }
+
+    // 已完成區塊
+    const greenBlock = document.getElementById("completed-supervisors");
+    const greenTags = document.getElementById("supervisor-tags-green");
+    const allUploadedMsg = document.getElementById("all-uploaded-msg");
+    if (completedSups.length > 0) {
+      greenTags.innerHTML = completedSups.map(([name, s]) => {
+        return `<span class="tag tag-green">${name}<span class="tag-count">${s.total} 件</span></span>`;
+      }).join("");
+      greenBlock.style.display = "block";
       allUploadedMsg.style.display = "none";
-    } else if (total > 0) {
-      blockEl.style.display = "none";
+    } else if (total > 0 && notUploadedSups.length === 0) {
+      greenBlock.style.display = "none";
       allUploadedMsg.style.display = "block";
     } else {
-      blockEl.style.display = "none";
+      greenBlock.style.display = "none";
       allUploadedMsg.style.display = "none";
     }
 
+    // 明細表格
     const tbody = document.getElementById("table-body");
     const emptyMsg = document.getElementById("empty-msg");
     if (rows.length === 0) {
@@ -322,22 +376,29 @@
     }
   }
 
+  function applyFilters() {
+    const supVal = document.getElementById("supervisor-select").value;
+    const statusVal = document.getElementById("status-select").value;
+    let filtered = supVal === "all" ? allRows : allRows.filter(r => r.supervisor === supVal);
+    if (statusVal === "uploaded") filtered = filtered.filter(r => r.status.startsWith("已上傳"));
+    if (statusVal === "not-uploaded") filtered = filtered.filter(r => r.status.startsWith("未上傳"));
+    updateUI(filtered);
+  }
+
   async function loadData() {
     try {
-      const res = await fetch(CSV_URL + "&t=" + Date.now());  // 避免瀏覽器快取
+      const res = await fetch(CSV_URL + "&t=" + Date.now());
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const text = await res.text();
       allRows = parseCSV(text);
 
-      // 填入監造單位下拉選單（去重複、排序）
-      const supervisors = [...new Set(allRows.map(r => r.supervisor).filter(Boolean))].sort();
+      const supervisors = [...new Set(allRows.map(r => r.supervisor).filter(Boolean))].sort((a, b) => a.localeCompare(b, "zh-TW"));
       const select = document.getElementById("supervisor-select");
       const currentSup = select.value;
       select.innerHTML = '<option value="all">全部</option>';
       supervisors.forEach(s => {
         const opt = document.createElement("option");
-        opt.value = s;
-        opt.textContent = s;
+        opt.value = s; opt.textContent = s;
         select.appendChild(opt);
       });
       if (currentSup) select.value = currentSup;
@@ -345,7 +406,6 @@
       document.getElementById("last-updated").textContent =
         `共 ${allRows.length} 筆・更新時間：${new Date().toLocaleString("zh-TW")}`;
 
-      // 建立或更新圓餅圖
       const uploaded = allRows.filter(r => r.status.startsWith("已上傳")).length;
       const notUploaded = allRows.length - uploaded;
 
@@ -378,8 +438,6 @@
             }
           }
         });
-
-        // 篩選事件（只綁定一次）
         select.addEventListener("change", applyFilters);
         document.getElementById("status-select").addEventListener("change", applyFilters);
       }
@@ -389,6 +447,7 @@
       document.getElementById("table-card").style.display = "block";
       document.getElementById("refresh-btn").textContent = "重新整理";
       document.getElementById("refresh-btn").disabled = false;
+      document.getElementById("error-msg").style.display = "none";
       applyFilters();
 
     } catch (e) {
@@ -400,15 +459,6 @@
       document.getElementById("refresh-btn").textContent = "重新整理";
       document.getElementById("refresh-btn").disabled = false;
     }
-  }
-
-  function applyFilters() {
-    const supVal = document.getElementById("supervisor-select").value;
-    const statusVal = document.getElementById("status-select").value;
-    let filtered = supVal === "all" ? allRows : allRows.filter(r => r.supervisor === supVal);
-    if (statusVal === "uploaded") filtered = filtered.filter(r => r.status.startsWith("已上傳"));
-    if (statusVal === "not-uploaded") filtered = filtered.filter(r => r.status.startsWith("未上傳"));
-    updateUI(filtered);
   }
 
   function refreshData() {
