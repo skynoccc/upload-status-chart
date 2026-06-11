@@ -109,7 +109,7 @@
 
     /* 標籤區塊 */
     .section-label {
-      font-size: 12px; font-weight: 500; color: var(--text-secondary);
+      font-size: 16px; font-weight: 500; color: var(--text-secondary);
       letter-spacing: 0.04em; text-transform: uppercase;
     }
     .tags-block { margin-top: 1.5rem; }
@@ -252,7 +252,7 @@
       </div>
 
       <div class="tags-block" id="completed-supervisors" style="display:none;">
-        <span class="section-label">已完成全部上傳的監造單位</span>
+        <span class="section-label">已上傳全部案件的監造單位</span>
         <div class="tags" id="supervisor-tags-green"></div>
       </div>
 
@@ -263,16 +263,14 @@
   <div class="card" id="table-card" style="display:none;">
     <div class="table-header-row">
       <span class="section-label">工程明細清單</span>
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <span class="filter-label">上傳情況篩選</span>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <select id="status-select" style="min-width:120px; flex:none;">
-            <option value="all">全部</option>
-            <option value="uploaded">已上傳</option>
-            <option value="not-uploaded">未上傳</option>
-          </select>
-          <button onclick="scrollToTop()" style="font-size:12px; padding:4px 12px; border-radius:6px; border:0.5px solid var(--border); background:var(--bg-surface); color:var(--text-secondary); cursor:pointer; white-space:nowrap;">回到頂端</button>
-        </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:nowrap;">
+        <span class="filter-label" style="white-space:nowrap;">上傳情況篩選</span>
+        <select id="status-select" style="min-width:100px; flex:none;">
+          <option value="all">全部</option>
+          <option value="uploaded">已上傳</option>
+          <option value="not-uploaded">未上傳</option>
+        </select>
+        <button onclick="scrollToTop()" style="font-size:12px; padding:4px 12px; border-radius:6px; border:0.5px solid var(--border); background:var(--bg-surface); color:var(--text-secondary); cursor:pointer; white-space:nowrap;">回到頂端</button>
       </div>
     </div>
     <div class="table-wrapper">
@@ -362,12 +360,18 @@
       .filter(([, s]) => s.uploaded === s.total && s.total > 0)
       .sort((a, b) => a[0].localeCompare(b[0], "zh-TW"));
 
+    const supVal = document.getElementById("supervisor-select").value;
+    if (supVal !== "all") {
+      document.getElementById("not-uploaded-supervisors").style.display = "none";
+      document.getElementById("completed-supervisors").style.display = "none";
+      document.getElementById("all-uploaded-msg").style.display = "none";
+    } else {
     const redBlock = document.getElementById("not-uploaded-supervisors");
     const redTags = document.getElementById("supervisor-tags-red");
     if (notUploadedSups.length > 0) {
       redTags.innerHTML = notUploadedSups.map(([name, s]) => {
         const missing = s.total - s.uploaded;
-        return `<span class="tag tag-red">${name}<span class="tag-count">${missing} 件未上傳</span></span>`;
+        return `<span class="tag tag-red">${name}<span class="tag-count">${missing} 件</span></span>`;
       }).join("");
       redBlock.style.display = "block";
     } else {
@@ -390,7 +394,7 @@
       greenBlock.style.display = "none";
       allUploadedMsg.style.display = "none";
     }
-
+    }
     // 明細表格
     const tbody = document.getElementById("table-body");
     const emptyMsg = document.getElementById("empty-msg");
