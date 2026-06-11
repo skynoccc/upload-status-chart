@@ -281,7 +281,7 @@
             <th>在建工程名稱</th>
             <th>監造單位</th>
             <th>承包廠商</th>
-            <th>上傳情況</th>
+            <th style="white-space:nowrap;">上傳情況</th>
           </tr>
         </thead>
         <tbody id="table-body"></tbody>
@@ -410,7 +410,7 @@
           <td>${r.name}</td>
           <td>${r.supervisor}</td>
           <td>${r.contractor}</td>
-          <td><span class="status-badge ${isUp ? "badge-uploaded" : "badge-not-uploaded"}">${isUp ? "已上傳" : "未上傳"}</span></td>
+          <td style="white-space:nowrap;"><span class="status-badge ${isUp ? "badge-uploaded" : "badge-not-uploaded"}">${isUp ? "已上傳" : "未上傳"}</span></td>
         </tr>`;
       }).join("");
     }
