@@ -53,7 +53,7 @@
 
     /* 標題 */
     .header { margin-bottom: 1.5rem; }
-    .header h1 { font-size: 18px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; line-height: 1.5; }
+    .header h1 { font-size: 18px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; line-height: 1.5; text-align: center; }
     .header-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
     .header p { font-size: 13px; color: var(--text-muted); margin: 0; }
     .hint { margin-top: 6px; font-size: 12px; color: var(--text-muted); line-height: 1.6; }
@@ -171,7 +171,7 @@
     /* 手機響應式優化 */
     @media (max-width: 480px) {
       body { padding: 1.2rem 0.75rem; }
-      .header h1 { font-size: 15px; }
+      .header h1 { font-size: 14px; text-align: center; }
       #event-name { font-size: 15px !important; }
       .hint { font-size: 11px; }
       .card { padding: 1rem; }
@@ -184,7 +184,11 @@
       select { width: 100%; min-width: unset; }
       .table-header-row { flex-direction: column; align-items: flex-start; }
       table { font-size: 12px; }
-      th, td { padding: 8px 8px 8px 0; }
+      th, td { padding: 8px 4px 8px 0; }
+      th { white-space: normal; }
+      table th:nth-child(2) { width:30%; }
+      table th:nth-child(3), table th:nth-child(4) { min-width:2em; }
+      table th:nth-child(5) { min-width:2em; white-space:normal; }
       .legend { gap: 10px; font-size: 12px; }
     }
   </style>
@@ -193,8 +197,8 @@
 <div class="container">
 
   <div class="header">
-    <h1>農業部農村發展及水土保持署臺南分署在建工程上傳情況統計</h1>
-    <p id="event-name" style="font-size:18px; color:var(--text-primary); margin-top:4px; font-weight:500; line-height:1.5;"></p>
+    <h1>農業部農村發展及水土保持署臺南分署</h1>
+    <h1 id="event-name" style="font-size:18px; color:var(--text-primary); margin-top:2px; font-weight:500; line-height:1.5;"></h1>
     <div class="header-row">
       <p id="last-updated">資料讀取中...</p>
       <button id="refresh-btn" onclick="refreshData()">重新整理</button>
@@ -278,10 +282,10 @@
         <thead>
           <tr>
             <th style="width:40px;">#</th>
-            <th>在建工程名稱</th>
-            <th>監造單位</th>
-            <th>承包廠商</th>
-            <th style="white-space:nowrap;">上傳情況</th>
+            <th style="width:35%;">在建工程名稱</th>
+            <th style="min-width:5em;">監造單位</th>
+            <th style="min-width:5em;">承包廠商</th>
+            <th style="min-width:4em; white-space:nowrap;">上傳情況</th>
           </tr>
         </thead>
         <tbody id="table-body"></tbody>
@@ -437,7 +441,7 @@
       const g2 = rawLines[1] ? rawLines[1].split(",")[6] : "";
       const eventName = g2 ? g2.replace(/"/g, "").trim() : "";
       const eventEl = document.getElementById("event-name");
-      eventEl.textContent = eventName ? "事件名稱：" + eventName : "";
+      eventEl.textContent = eventName ? eventName + "事件在建工程上傳情況統計" : "在建工程上傳情況統計";
 
       // 監造單位下拉選單
       const supervisors = [...new Set(allRows.map(r => r.supervisor).filter(Boolean))].sort((a, b) => a.localeCompare(b, "zh-TW"));
