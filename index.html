@@ -387,7 +387,7 @@
     const allUploadedMsg = document.getElementById("all-uploaded-msg");
     if (completedSups.length > 0) {
       greenTags.innerHTML = completedSups.map(([name, s]) =>
-        `<span class="tag tag-green">${name}<span class="tag-count">${s.total} 件</span></span>`
+        `<span class="tag tag-green">${name}<span class="tag-count">${s.uploaded} 件</span></span>`
       ).join("");
       greenBlock.style.display = "block";
       allUploadedMsg.style.display = "none";
