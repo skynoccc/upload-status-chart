@@ -361,7 +361,7 @@
       .sort((a, b) => a[0].localeCompare(b[0], "zh-TW"));
 
     const completedSups = Object.entries(supStats)
-      .filter(([, s]) => s.uploaded === s.total && s.total > 0)
+      .filter(([, s]) => s.uploaded > 0)
       .sort((a, b) => a[0].localeCompare(b[0], "zh-TW"));
 
     const supVal = document.getElementById("supervisor-select").value;
